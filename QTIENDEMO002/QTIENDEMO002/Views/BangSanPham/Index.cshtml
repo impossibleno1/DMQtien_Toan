@@ -4,10 +4,10 @@
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
+<h2>Danh sach san pham</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    <a href="@Url.Action("Create")" class="btn btn-primary">Tao san phan moi</a>
 </p>
 <table class="table">
     <tr>
@@ -59,9 +59,9 @@
             @Html.DisplayFor(modelItem => item.LoaiSanPham.TenLoai)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.id })
+            <a href="@Url.Action("Edit", new { id = item.id})" class="btn btn-primary">Chinh sua</a>
+            <a href="@Url.Action("Details", new { id = item.id})" class="btn btn-success">Thong tin</a>
+            <a href="@Url.Action("Delete", new { id = item.id})" class="btn btn-danger">Xoa</a>
         </td>
     </tr>
 }
