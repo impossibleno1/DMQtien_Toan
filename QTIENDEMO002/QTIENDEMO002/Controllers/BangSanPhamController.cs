@@ -48,17 +48,28 @@ namespace QTIENDEMO002.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include="id,MaSP,TenSP,Loai_id,GiaBan,GiaGoc,GiaGop,SoLuongTon")] BangSanPham bangsanpham)
+        public ActionResult Create( BangSanPham model)
         {
+            CheckBangSanPham(model);
             if (ModelState.IsValid)
             {
-                db.BangSanPhams.Add(bangsanpham);
+                db.BangSanPhams.Add(model);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            ViewBag.Loai_id = new SelectList(db.LoaiSanPhams, "id", "TenLoai", bangsanpham.Loai_id);
-            return View(bangsanpham);
+            ViewBag.Loai_id = new SelectList(db.LoaiSanPhams, "id", "TenLoai", model.Loai_id);
+            return View(model);
+        }
+
+        private void CheckBangSanPham(BangSanPham model)
+        {
+            if (model.GiaGoc < 0)
+                ModelState.AddModelError("GiaGoc", "Giá gốc phải lớn hơn 0!");
+            if (model.GiaBan < model.GiaGoc)
+                ModelState.AddModelError("GiaBan", "Giá bán phải lớn hơn giá gốc!");
+            if (model.GiaGop < model.GiaGoc)
+                ModelState.AddModelError("GiaGop", "Giá góp phải lớn hơn giá gốc!");
         }
 
         // GET: /BangSanPham/Edit/5
