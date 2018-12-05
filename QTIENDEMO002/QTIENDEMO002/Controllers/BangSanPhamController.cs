@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using QTIENDEMO002.Models;
+using System.Transactions;
 
 namespace QTIENDEMO002.Controllers
 {
@@ -22,18 +23,10 @@ namespace QTIENDEMO002.Controllers
         }
 
         // GET: /BangSanPham/Details/5
-        public ActionResult Details(int? id)
+        public FileResult Details(int id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            BangSanPham bangsanpham = db.BangSanPhams.Find(id);
-            if (bangsanpham == null)
-            {
-                return HttpNotFound();
-            }
-            return View(bangsanpham);
+            var path = Server.MapPath("~/App_Data/" + id);
+            return File(path, "images");
         }
 
         // GET: /BangSanPham/Create
@@ -53,11 +46,25 @@ namespace QTIENDEMO002.Controllers
             CheckBangSanPham(model);
             if (ModelState.IsValid)
             {
-                db.BangSanPhams.Add(model);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
+                using (var scope = new TransactionScope())
+                {
+                    db.BangSanPhams.Add(model);
+                    db.SaveChanges();
 
+                    var path = Server.MapPath("~/App_Data"); 
+                    path = path + "/" + model.id;
+                    if (Request.Files["HinhAnh"] != null && Request.Files["HinhAnh"].ContentLength > 0)
+                    {
+                        Request.Files["HinhAnh"].SaveAs(path);
+
+                        scope.Complete(); 
+                        return RedirectToAction("Index");
+                    }
+                    else
+                        ModelState.AddModelError("HinhAnh", "Chưa có hình sản phẩm!");
+
+                }
+            }
             ViewBag.Loai_id = new SelectList(db.LoaiSanPhams, "id", "TenLoai", model.Loai_id);
             return View(model);
         }
@@ -73,7 +80,7 @@ namespace QTIENDEMO002.Controllers
         }
 
         // GET: /BangSanPham/Edit/5
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int id)
         {
             if (id == null)
             {
