@@ -100,16 +100,31 @@ namespace QTIENDEMO002.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include="id,MaSP,TenSP,Loai_id,GiaBan,GiaGoc,GiaGop,SoLuongTon")] BangSanPham bangsanpham)
+        public ActionResult Edit( BangSanPham model)
         {
+            CheckBangSanPham(model);
             if (ModelState.IsValid)
             {
-                db.Entry(bangsanpham).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                using (var scope = new TransactionScope())
+                {
+                   
+                    db.SaveChanges();
+
+                    var path = Server.MapPath("~/App_Data");
+                    path = path + "/" + model.id;
+                    if (Request.Files["HinhAnh"] != null && Request.Files["HinhAnh"].ContentLength > 0)
+                    {
+                        Request.Files["HinhAnh"].SaveAs(path);
+
+                        
+                    }
+                    scope.Complete();
+                    return RedirectToAction("Index");
+
+                }
             }
-            ViewBag.Loai_id = new SelectList(db.LoaiSanPhams, "id", "TenLoai", bangsanpham.Loai_id);
-            return View(bangsanpham);
+            ViewBag.Loai_id = new SelectList(db.LoaiSanPhams, "id", "TenLoai", model.Loai_id);
+            return View(model);
         }
 
         // GET: /BangSanPham/Delete/5
